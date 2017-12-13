@@ -26,7 +26,7 @@ class PasswordResetTests(TestCase):
 
 	def test_contains_form(self):
 		form = self.response.context.get('form')
-		self.assertInstance(form, PasswordResetForm)
+		self.assertIsInstance(form, PasswordResetForm)
 
 	def test_form_inputs(self):
 		self.assertContains(self.response, '<input, 2')
