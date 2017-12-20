@@ -1,10 +1,12 @@
-
+from djngo.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import UpdateView
 from django.db.models import Count
-from django.contrib.auth.decorators import login_required
+from django.contrib.utils.decorators import method_decorator
 
 from .forms import NewTopicForm, PostForm
 from .models import Board, Topic, Post
+from django.utils import timezone
 # Create your views here.
 
 
@@ -60,3 +62,17 @@ def reply_topic(request, pk, topic_pk):
 	return render(request, 'reply_topic.html', {'topic': topic, 'form': form})
 
 
+@method_decorator(login_required, name='dispatch')
+class PostUpdateView(UpdateView):
+	model = Post
+	fields = ('message', )
+	template_name = 'edit_post.html'
+	pk_url_kwarg = 'post_pk'
+	context_object_name = 'post'
+
+	def form_valid(self, form): 
+		post = form.save(commit=False)
+		post.updated_by = self.request.user
+		post.updated_at = timezone.now()
+		post.save()
+		return redirect('topic_posts', pk=post.topic.board.pk, topic_pk=post.topic.pk)
